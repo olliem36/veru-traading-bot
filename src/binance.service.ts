@@ -76,20 +76,19 @@ const VeruBehaviour: IVeruBehaviour = {
     TREND_SAMPLE_FREQUENCY_SECONDS: 5, // * 60,
     TREND_TO_BUY: ['down', 'down', 'up'],
 
-    BET_SIZE_BTC: 0.003,
+    BET_SIZE_BTC: 0.001,
 
     // When to sell
     STOP_LOSS_PERCENTAGE: 0.05,
     STOP_LOSS_AGE_MINS: 60 * 3,
 
     // USD
-    MINIMUM_PROFIT: 2.50,
-
-
+    MINIMUM_PROFIT: 0.5
+    ,
     // Environment settings
 
     ENV_TYPICAL_SPREAD: 0.000001,
-    ENV_TAKER_FEE_PERCENT: 0.0075,
+    ENV_TAKER_FEE_PERCENT: 0.00075,
 
     ENV_INFO_LOG: false,
 
