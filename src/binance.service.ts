@@ -74,8 +74,8 @@ interface IVeruBehaviour {
 }
 
 const VeruBehaviour: IVeruBehaviour = {
-    TREND_SAMPLE_FREQUENCY_SECONDS: 5, // * 60,
-    TREND_TO_BUY: ['down', 'down', 'up'],
+    TREND_SAMPLE_FREQUENCY_SECONDS: 2, // * 60,
+    TREND_TO_BUY: ['down', 'down', 'down', 'up'],
 
     BET_SIZE_BTC: 0.01,
 
@@ -85,7 +85,7 @@ const VeruBehaviour: IVeruBehaviour = {
     STOP_LOSS_AGE_MINS: 60 * 6,
 
     // USD
-    MINIMUM_PROFIT: 0.15,
+    MINIMUM_PROFIT: 5.15,
 
     // Environment settings
     ENV_TYPICAL_SPREAD: 0.000001,
