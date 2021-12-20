@@ -58,6 +58,7 @@ interface IVeruBehaviour {
     BET_SIZE_BTC: number
 
     // When to sell
+    STOP_LOSS_USD: number,
     STOP_LOSS_PERCENTAGE: number,
     STOP_LOSS_AGE_MINS: number,
 
@@ -76,14 +77,15 @@ const VeruBehaviour: IVeruBehaviour = {
     TREND_SAMPLE_FREQUENCY_SECONDS: 5, // * 60,
     TREND_TO_BUY: ['down', 'down', 'up'],
 
-    BET_SIZE_BTC: 0.008,
+    BET_SIZE_BTC: 0.01,
 
     // When to sell
-    STOP_LOSS_PERCENTAGE: 0.05,
-    STOP_LOSS_AGE_MINS: 60 * 3,
+    STOP_LOSS_USD: 0.9, // Dont forget to consider spread
+    STOP_LOSS_PERCENTAGE: 0,
+    STOP_LOSS_AGE_MINS: 60 * 6,
 
     // USD
-    MINIMUM_PROFIT: 0.04,
+    MINIMUM_PROFIT: 0.15,
 
     // Environment settings
     ENV_TYPICAL_SPREAD: 0.000001,
@@ -164,6 +166,7 @@ export default class BinanceService {
         })
 
         const successfulOrders = this.ordersStore.filter((o) => o.profitLoss > 0)
+        const failedOrders = this.ordersStore.filter((o) => o.profitLoss < 0)
         const completedOrders = this.ordersStore.filter((o) => o.hasFulfilled)
         const outstandingOrders = this.ordersStore.filter((o) => !o.hasFulfilled)
 
@@ -174,14 +177,32 @@ export default class BinanceService {
             }
         })
 
+        const totalSuccessOrders = successfulOrders.reduce((a, b) => {
+            return {
+                ... a,
+                profitLoss: a.profitLoss + b.profitLoss
+            }
+        })
+        const totalFailedOrders = failedOrders.reduce((a, b) => {
+            return {
+                ... a,
+                profitLoss: a.profitLoss + b.profitLoss
+            }
+        })
+
         console.log(`=== back testing complete ===`)
         console.log(``)
-        console.log(`Success rate: \t\t ${successfulOrders.length / completedOrders.length * 100}`)
+        console.log(`Success rate (%): \t ${(successfulOrders.length / completedOrders.length * 100).toPrecision(3)}%`)
+        console.log(``)
+        console.log(`AVG success margin: \t ${(totalSuccessOrders.profitLoss / successfulOrders.length).toPrecision(3)} $USD`)
+        console.log(`AVG failed margin: \t ${(totalFailedOrders.profitLoss / failedOrders.length).toPrecision(3)} $USD`)
         console.log(``)
         console.log(`Orders made: \t\t ${this.ordersStore.length}`)
         console.log(`Orders completed: \t ${completedOrders.length}`)
         console.log(`Orders pending: \t ${outstandingOrders.length}`)
         console.log(`Orders success: \t ${successfulOrders.length}`)
+        console.log(`Orders failed: \t\t ${failedOrders.length}`)
+
         console.log(``)
         console.log(`Data points \t\t ${data.length}`)
         console.log(`Start date \t\t ${new Date(this.tickerStore[0].eventTime)}`)
@@ -189,6 +210,7 @@ export default class BinanceService {
         console.log(``)
         console.log(`Profit made \t\t ${profitLoss.profitLoss.toPrecision(2)} $USD`)
 
+        return
         console.log(``)
         console.log(`Orders:`)
         this.ordersStore.forEach((order) => {
@@ -325,8 +347,11 @@ export default class BinanceService {
                 // currentBestAsk < order.orderPrice
                 if (!willSellOrder) {
                     // If price hasn't been met and price is lower, check for stop loss
-                    const hasMetMaxAge = fulfillmentTimeMins > VeruBehaviour.STOP_LOSS_AGE_MINS
-                    const hasMetStopLoss = percentageGain < (-VeruBehaviour.STOP_LOSS_PERCENTAGE)
+                    const hasMetMaxAge = fulfillmentTimeMins >= VeruBehaviour.STOP_LOSS_AGE_MINS
+
+                    const hasMetStopLoss = VeruBehaviour.STOP_LOSS_PERCENTAGE > 0
+                      ? percentageGain < (-VeruBehaviour.STOP_LOSS_PERCENTAGE)
+                      : tradeMargin < (-VeruBehaviour.STOP_LOSS_USD)
 
                     // console.log(`fulfillmentTimeMins: ${fulfillmentTimeMins}`, VeruBehaviour.STOP_LOSS_AGE_MINS)
 
