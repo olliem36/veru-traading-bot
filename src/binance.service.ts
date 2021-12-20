@@ -76,17 +76,16 @@ const VeruBehaviour: IVeruBehaviour = {
     TREND_SAMPLE_FREQUENCY_SECONDS: 5, // * 60,
     TREND_TO_BUY: ['down', 'down', 'up'],
 
-    BET_SIZE_BTC: 0.001,
+    BET_SIZE_BTC: 0.008,
 
     // When to sell
     STOP_LOSS_PERCENTAGE: 0.05,
     STOP_LOSS_AGE_MINS: 60 * 3,
 
     // USD
-    MINIMUM_PROFIT: 0.5
-    ,
-    // Environment settings
+    MINIMUM_PROFIT: 0.04,
 
+    // Environment settings
     ENV_TYPICAL_SPREAD: 0.000001,
     ENV_TAKER_FEE_PERCENT: 0.00075,
 
@@ -191,7 +190,6 @@ export default class BinanceService {
         console.log(`Profit made \t\t ${profitLoss.profitLoss.toPrecision(2)} $USD`)
 
         console.log(``)
-        return
         console.log(`Orders:`)
         this.ordersStore.forEach((order) => {
             const niceDate = new Date(order.timeStamp).toISOString().replace(/T/, ' ').replace(/\..+/, '')
@@ -277,7 +275,7 @@ export default class BinanceService {
         const feeBuyUSD = orderVolumeUSD * VeruBehaviour.ENV_TAKER_FEE_PERCENT
         const usdIncreaseNeeded = VeruBehaviour.MINIMUM_PROFIT + (feeBuyUSD * 2)
 
-        const percentageIncreaseNeeded = (orderVolumeUSD + usdIncreaseNeeded) / orderVolumeUSD / 100
+        const percentageIncreaseNeeded = usdIncreaseNeeded / orderVolumeUSD
 
         const targetSellPrice = currentBestAsk + (currentBestAsk * percentageIncreaseNeeded)
 
